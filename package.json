@@ -16,7 +16,7 @@
   },
   "main": "src/main.js",
   "scripts": {
-    "dev": "node src/main.js",
+    "start": "node src/main.js",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
