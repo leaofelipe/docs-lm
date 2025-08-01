@@ -17,6 +17,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "node src/main.js",
+    "demo": "node demo.js",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
@@ -26,11 +27,16 @@
     "standard": "^17.1.2"
   },
   "dependencies": {
+    "@huggingface/inference": "^4.6.1",
+    "@langchain/anthropic": "^0.3.25",
     "@langchain/community": "^0.3.49",
     "@langchain/core": "^0.3.66",
+    "@langchain/textsplitters": "^0.1.0",
+    "@xenova/transformers": "^2.17.2",
     "dotenv": "^17.2.1",
     "glob": "^11.0.3",
     "gray-matter": "^4.0.3",
+    "langchain": "^0.3.30",
     "remark": "^15.0.1",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
