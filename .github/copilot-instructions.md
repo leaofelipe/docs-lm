@@ -24,18 +24,19 @@ docs-lm/
 ### Available Scripts
 - `yarn dev` - Start development server
 - `yarn install` - Install dependencies
-- `npx eslint .` - Lint code
+- `yarn lint` - Lint code with JavaScript Standard Style
+- `yarn lint:fix` - Lint and fix code automatically
 
 ### Key Dependencies
 - **dotenv**: For environment variable management
 - **commitizen**: For conventional commit formatting
-- **eslint**: For code quality enforcement
+- **standard**: For JavaScript Standard Style code quality enforcement
 
 ### Coding Preferences
 1. Always use ES module syntax (import/export, not require)
 2. Use async/await for asynchronous operations
 3. Follow conventional commit message format
-4. Ensure code passes ESLint checks
+4. Ensure code passes JavaScript Standard Style checks
 5. Use environment variables via dotenv for configuration
 6. Maintain compatibility with Node.js 20+
 

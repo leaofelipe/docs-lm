@@ -15,7 +15,10 @@ yarn dev
 yarn install
 
 # Lint code
-npx eslint .
+yarn lint
+
+# Lint and fix code
+yarn lint:fix
 ```
 
 ## Project Structure
@@ -31,12 +34,12 @@ docs-lm/
 ## Key Dependencies
 - **dotenv**: Environment variable management
 - **commitizen**: Conventional commit formatting
-- **eslint**: Code linting
+- **standard**: JavaScript Standard Style linting
 
 ## Coding Standards
 - Use ES modules (type: "module")
 - Follow conventional commit format
-- Use ESLint for code quality
+- Use JavaScript Standard Style for code quality
 - Node.js version 20 or higher required
 
 ## Environment Setup
