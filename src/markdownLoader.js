@@ -1,9 +1,14 @@
-import { readFile, stat } from 'fs/promises'
-import { join, relative, basename, extname } from 'path'
+import { readFile } from 'fs/promises'
+import { join, relative, basename, extname, sep } from 'path'
 import { glob } from 'glob'
+import matter from 'gray-matter'
+import remarkParse from 'remark-parse'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkGfm from 'remark-gfm'
+import { unified } from 'unified'
 
 export class MarkdownLoader {
-  constructor(dataPath = process.env.DATA_PATH) {
+  constructor(dataPath = process.env.DATA_PATH || 'data/docs') {
     this.dataPath = dataPath
   }
 
@@ -21,29 +26,54 @@ export class MarkdownLoader {
     }
   }
 
+  async getAbstractSyntaxTree(content) {
+    const processor = unified()
+      .use(remarkParse)
+      .use(remarkFrontmatter)
+      .use(remarkGfm)
+
+    return processor.parse(content)
+  }
+
   async loadMarkdownFile(filePath) {
     try {
-      const [content, stats] = await Promise.all([
-        readFile(filePath, 'utf-8'),
-        stat(filePath)
-      ])
+      const fileContent = await readFile(filePath, 'utf-8')
 
+      const { data: frontmatter, content } = matter(fileContent)
       const relativePath = relative(this.dataPath, filePath)
       const fileName = basename(filePath, extname(filePath))
+
+      const hierarchy = this.extractHierarchyFromPath(relativePath)
+      const abstractSyntaxTree = await this.getAbstractSyntaxTree(content)
 
       return {
         filePath,
         relativePath,
         fileName,
         content: content.trim(),
-        size: stats.size,
-        lastModified: stats.mtime,
-        created: stats.birthtime
+        frontmatter,
+        rawContent: fileContent.trim(),
+        hierarchy,
+        ast: abstractSyntaxTree
       }
     } catch (error) {
       console.error(`Error on load file ${filePath}:`, error.message)
       throw error
     }
+  }
+
+  extractHierarchyFromPath(relativePath) {
+    const pathParts = relativePath.split(sep)
+    if (pathParts[pathParts.length - 1].endsWith('.md')) {
+      const filename = pathParts[pathParts.length - 1].replace('.md', '')
+      if (filename !== 'README') {
+        pathParts[pathParts.length - 1] = filename
+      } else {
+        pathParts.pop()
+      }
+    }
+
+    return pathParts.filter(part => part.length > 0)
   }
 
   async loadAllMarkdownFiles(pattern = '**/*.md') {

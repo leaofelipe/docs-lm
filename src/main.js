@@ -10,9 +10,10 @@ class DocsLM {
   async start() {
     try {
       const files = await this._markdownLoader.loadAllMarkdownFiles()
-      files.forEach(file => {
-        console.log(file)
-      })
+      console.log(files[0])
+      // files.forEach(file => {
+      //   console.log(file)
+      // })
     } catch (error) {
       console.error('Error on initialization', error.message)
     }

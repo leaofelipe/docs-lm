@@ -1,17 +1,20 @@
 # GitHub Copilot Instructions
 
 ## Project Context
+
 This is a Node.js ESM project called "docs-lm" using Yarn 4.6.0 as package manager.
 
 ## Development Guidelines
 
 ### Code Standards
+
 - Use ES modules syntax (import/export)
 - Follow conventional commit format with commitizen
 - Use ESLint for code linting
 - Target Node.js version 20 or higher
 
 ### Project Structure
+
 ```
 docs-lm/
 ├── src/
@@ -22,17 +25,20 @@ docs-lm/
 ```
 
 ### Available Scripts
-- `yarn dev` - Start development server
+
+- `yarn start` - Start development server
 - `yarn install` - Install dependencies
 - `yarn lint` - Lint code with JavaScript Standard Style
 - `yarn lint:fix` - Lint and fix code automatically
 
 ### Key Dependencies
+
 - **dotenv**: For environment variable management
 - **commitizen**: For conventional commit formatting
 - **standard**: For JavaScript Standard Style code quality enforcement
 
 ### Coding Preferences
+
 1. Always use ES module syntax (import/export, not require)
 2. Use async/await for asynchronous operations
 3. Follow conventional commit message format
@@ -41,16 +47,19 @@ docs-lm/
 6. Maintain compatibility with Node.js 20+
 
 ### File Naming
+
 - Use kebab-case for files and directories
 - Use .js extension for JavaScript files
 - Place main application code in src/ directory
 
 ### Environment Setup
+
 - Load environment variables using dotenv
 - Ensure Node.js >=20.0.0 compatibility
 - Use Yarn 4.6.0 for package management
 
 ### Documentation
+
 - All code should be documented in English
 - Do not add code documentation like JSDoc or similar
 - Do not add new Readme files without asking
