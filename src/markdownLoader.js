@@ -3,7 +3,7 @@ import { join, relative, basename, extname } from 'path'
 import { glob } from 'glob'
 
 export class MarkdownLoader {
-  constructor(dataPath = process.env.DATA_PATH || 'data') {
+  constructor(dataPath = process.env.DATA_PATH) {
     this.dataPath = dataPath
   }
 
