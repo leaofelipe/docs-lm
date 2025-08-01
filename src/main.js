@@ -1,16 +1,21 @@
 import dotenv from 'dotenv'
+import { MarkdownLoader } from './markdownLoader.js'
 
-dotenv.config() // Load environment variables
-
+dotenv.config()
 class DocsLM {
   constructor() {
-    this.name = 'Docs LM' // Application name
-    this.version = '0.1.0' // Current version
+    this._markdownLoader = new MarkdownLoader()
   }
 
-  start() {
-    // Log startup message
-    console.log(`${this.name} v${this.version} starting...`)
+  async start() {
+    try {
+      const files = await this._markdownLoader.loadAllMarkdownFiles()
+      files.forEach(file => {
+        console.log(file)
+      })
+    } catch (error) {
+      console.error('Error on initialization', error.message)
+    }
   }
 }
 

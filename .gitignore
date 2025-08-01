@@ -3,3 +3,4 @@ node_modules/
 .claude
 Data/**
 !Data/.gitkeep
+.yarn/
