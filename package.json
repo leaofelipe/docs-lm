@@ -1,4 +1,31 @@
 {
   "name": "docs-lm",
-  "packageManager": "yarn@4.6.0"
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "yarn@4.6.0",
+  "private": true,
+  "author": "Felipe Leão <felipe@felipeleao.com> (http://felipeleao.com/)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "node src/main.js",
+    "lint": "standard",
+    "lint:fix": "standard --fix"
+  },
+  "devDependencies": {
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "standard": "^17.1.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
 }
