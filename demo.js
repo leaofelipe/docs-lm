@@ -47,9 +47,9 @@ async function demo() {
 
     // Demo questions
     const questions = [
-      'O que são eventos no Clappr?',
-      'Quais são os principais eventos do player?',
-      'Como usar os eventos em uma aplicação?'
+      // 'O que são eventos no Clappr?'
+      'Quais são os principais eventos do player?'
+      // 'Como usar os eventos em uma aplicação?'
     ]
 
     for (const question of questions) {
@@ -57,6 +57,7 @@ async function demo() {
 
       try {
         const response = await ragChain.askWithSources(question)
+        console.log('HERE')
         console.log(`🤖 Answer: ${response.answer}`)
         console.log(`📄 Sources: ${response.sources.length} documents found`)
 
@@ -68,6 +69,7 @@ async function demo() {
         }
         console.log('---\n')
       } catch (error) {
+        console.log(error)
         console.error(`❌ Error: ${error.message}\n`)
       }
     }

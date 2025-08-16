@@ -1,30 +1,54 @@
-import { ConversationalRetrievalQAChain } from 'langchain/chains'
-import { BufferMemory } from 'langchain/memory'
+import { createRetrievalChain } from 'langchain/chains/retrieval'
+import { createStuffDocumentsChain } from 'langchain/chains/combine_documents'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { RunnableWithMessageHistory } from '@langchain/core/runnables'
+import { ChatMessageHistory } from 'langchain/stores/message/in_memory'
 
 export class RAGChain {
   constructor(llm, retriever) {
     this.llm = llm
     this.retriever = retriever
-    this.memory = new BufferMemory({
-      memoryKey: 'chat_history',
-      returnMessages: true
-    })
+    this.messageHistory = new ChatMessageHistory()
     this.chain = null
+    this.chainWithHistory = null
   }
 
   async initialize() {
     try {
       console.log('Initializing RAG chain...')
 
-      this.chain = ConversationalRetrievalQAChain.fromLLM(
-        this.llm,
-        this.retriever,
-        {
-          memory: this.memory,
-          returnSourceDocuments: true,
-          verbose: false
-        }
-      )
+      // Create the system prompt template
+      const systemPrompt = `Você é um assistente útil que responde perguntas baseado no contexto fornecido.
+Use apenas as informações do contexto para responder às perguntas.
+Se a informação não estiver disponível no contexto, diga que não sabe.
+
+Contexto:
+{context}
+
+Pergunta: {input}`
+
+      const prompt = ChatPromptTemplate.fromTemplate(systemPrompt)
+
+      // Create the document chain
+      const documentChain = await createStuffDocumentsChain({
+        llm: this.llm,
+        prompt
+      })
+
+      // Create the retrieval chain
+      this.chain = await createRetrievalChain({
+        retriever: this.retriever,
+        combineDocsChain: documentChain
+      })
+
+      // Create chain with message history
+      this.chainWithHistory = new RunnableWithMessageHistory({
+        runnable: this.chain,
+        getMessageHistory: () => this.messageHistory,
+        inputMessagesKey: 'input',
+        historyMessagesKey: 'chat_history',
+        outputMessagesKey: 'answer'
+      })
 
       console.log('RAG chain initialized successfully')
     } catch (error) {
@@ -41,14 +65,19 @@ export class RAGChain {
     try {
       console.log(`Processing question: ${question}`)
 
-      const response = await this.chain.call({
-        question: question
-      })
+      const response = await this.chainWithHistory.invoke(
+        {
+          input: question
+        },
+        {
+          configurable: { sessionId: 'default' }
+        }
+      )
 
       return {
-        answer: response.text,
-        sourceDocuments: response.sourceDocuments,
-        chatHistory: await this.memory.chatHistory.getMessages()
+        answer: response.answer,
+        sourceDocuments: response.context,
+        chatHistory: await this.messageHistory.getMessages()
       }
     } catch (error) {
       console.error('Error processing question:', error.message)
@@ -58,7 +87,6 @@ export class RAGChain {
 
   async askWithSources(question) {
     const result = await this.ask(question)
-
     return {
       answer: result.answer,
       sources: result.sourceDocuments.map(doc => ({
@@ -70,12 +98,12 @@ export class RAGChain {
   }
 
   clearMemory() {
-    this.memory.clear()
+    this.messageHistory.clear()
     console.log('Chat memory cleared')
   }
 
   getMemory() {
-    return this.memory
+    return this.messageHistory
   }
 
   getChain() {
