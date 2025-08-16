@@ -3,33 +3,25 @@ import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { MarkdownTextSplitter } from '@langchain/textsplitters'
 
 export class DocumentLoader {
-  constructor(dataPath = process.env.DATA_PATH || 'data/docs') {
+  constructor(dataPath = process.env.DATA_PATH) {
     this.dataPath = dataPath
     this.splitter = new MarkdownTextSplitter({
-      chunkSize: 1000,
+      chunkSize: 1200,
       chunkOverlap: 200,
       separators: ['\n## ', '\n### ', '\n#### ', '\n\n', '\n', ' ', '']
     })
   }
 
   async loadDocuments() {
+    console.log(`Loading documents from: ${this.dataPath}`)
+    const isRecursive = true
     try {
       const loader = new DirectoryLoader(
         this.dataPath,
-        {
-          '.md': path => new TextLoader(path)
-        },
-        true
+        { '.md': path => new TextLoader(path) },
+        isRecursive
       )
-
-      console.log(`Loading documents from: ${this.dataPath}`)
       const documents = await loader.load()
-
-      if (documents.length === 0) {
-        console.warn('No markdown files found in the specified directory')
-        return []
-      }
-
       console.log(`Loaded ${documents.length} documents`)
       return documents
     } catch (error) {
