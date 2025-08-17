@@ -24,7 +24,7 @@ export class EmbeddingService {
 
   async checkConnection() {
     try {
-      await this._embeddings.embedQuery('testing query | query de teste')
+      await this._embeddings.embedQuery('testing')
     } catch (error) {
       if (error.message.includes('401')) {
         throw new Error('Invalid HuggingFace API key')
