@@ -7,7 +7,7 @@ import { RAGChain } from '../chains/ragChain.js'
 
 dotenv.config()
 
-const questions = ['Question 1 about the doc...']
+const questions = ['O que são eventos do player?']
 
 async function demo() {
   try {
@@ -23,30 +23,33 @@ async function demo() {
     const anthropicService = new AnthropicService()
     await anthropicService.initialize()
 
-    // const retriever = memoryStore.getRetriever()
-    // const ragChain = new RAGChain(anthropicService.getLLM(), retriever)
-    // await ragChain.initialize()
+    const retriever = memoryStore.getRetriever()
+    const ragChain = new RAGChain(anthropicService.llm, retriever)
+    await ragChain.initialize()
 
-    // for (const question of questions) {
-    //   console.log(`Question: ${question}`)
+    for (const question of questions) {
+      console.log(`Question: ${question}`)
 
-    //   try {
-    //     const response = await ragChain.askWithSources(question)
-    //     console.log(`Answer: ${response.answer}`)
-    //     console.log(`Sources: ${response.sources.length} documents found`)
+      try {
+        const response = await ragChain.ask(question)
+        console.log(`Answer: ${response.answer}`)
+        console.log(
+          `Sources: ${response?.sourceDocuments.length} documents found`
+        )
 
-    //     if (response.sources.length > 0) {
-    //       console.log('Source previews:')
-    //       response.sources.forEach((source, index) => {
-    //         console.log(`${index + 1}. ${source.content}`)
-    //       })
-    //     }
-    //     console.log('---\n')
-    //   } catch (error) {
-    //     console.log(error)
-    //     console.error(`Error: ${error.message}\n`)
-    //   }
-    // }
+        if (response?.sourceDocuments.length > 0) {
+          console.log('Source documents:')
+          response.sourceDocuments.forEach((doc, index) => {
+            console.log(`${index + 1}. Content: ${doc.pageContent}`)
+            console.log(`   Metadata: ${JSON.stringify(doc.metadata)}`)
+          })
+        }
+        console.log('---\n')
+      } catch (error) {
+        console.log(error)
+        console.error(`Error: ${error.message}\n`)
+      }
+    }
   } catch (error) {
     console.log(error)
     console.error('Demo failed:', error.message)

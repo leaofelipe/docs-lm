@@ -3,7 +3,7 @@ import { createStuffDocumentsChain } from 'langchain/chains/combine_documents'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { RunnableWithMessageHistory } from '@langchain/core/runnables'
 import { ChatMessageHistory } from 'langchain/stores/message/in_memory'
-import SYSTEM_PROMPT from './systemPrompt'
+import SYSTEM_PROMPT from './systemPrompt.js'
 
 export class RAGChain {
   constructor(llm, retriever) {
