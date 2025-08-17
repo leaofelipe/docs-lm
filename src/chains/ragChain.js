@@ -3,15 +3,7 @@ import { createStuffDocumentsChain } from 'langchain/chains/combine_documents'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { RunnableWithMessageHistory } from '@langchain/core/runnables'
 import { ChatMessageHistory } from 'langchain/stores/message/in_memory'
-
-const SYSTEM_PROMPT = `Você é um assistente útil que responde perguntas baseado no contexto fornecido.
-Use apenas as informações do contexto para responder às perguntas.
-Se a informação não estiver disponível no contexto, diga que não sabe.
-
-Contexto:
-{context}
-
-Pergunta: {input}`
+import SYSTEM_PROMPT from './systemPrompt'
 
 export class RAGChain {
   constructor(llm, retriever) {
@@ -20,6 +12,12 @@ export class RAGChain {
     this.messageHistory = new ChatMessageHistory()
     this.chain = null
     this.chainWithHistory = null
+  }
+
+  checkInitialization() {
+    if (!this.chain) {
+      throw new Error('RAG chain not initialized. Call initialize() first.')
+    }
   }
 
   async initialize() {
@@ -36,7 +34,6 @@ export class RAGChain {
         combineDocsChain: documentChain
       })
 
-      // Create chain with message history
       this.chainWithHistory = new RunnableWithMessageHistory({
         runnable: this.chain,
         getMessageHistory: () => this.messageHistory,
@@ -53,20 +50,12 @@ export class RAGChain {
   }
 
   async ask(question) {
-    if (!this.chain) {
-      throw new Error('RAG chain not initialized. Call initialize() first.')
-    }
-
+    this.checkInitialization()
     try {
       console.log(`Processing question: ${question}`)
-
       const response = await this.chainWithHistory.invoke(
-        {
-          input: question
-        },
-        {
-          configurable: { sessionId: 'default' }
-        }
+        { input: question },
+        { configurable: { sessionId: 'default' } }
       )
 
       return {
