@@ -260,25 +260,26 @@ CHROMA_MEMORY_LIMIT=512
 
 ### Fase 1: DocumentProcessor
 
-- [ ] Criar `services/documentProcessor.js`
-- [ ] Orquestra DocumentLoader + EmbeddingService + ChromaStore
-- [ ] Testes básicos de funcionamento
-- [ ] Migração do MemoryStore para ChromaDB
+- [x] Criar `services/documentProcessor.js`
+- [x] Orquestra DocumentLoader + EmbeddingService + ChromaStore
+- [x] Testes básicos de funcionamento
+- [x] Migração do MemoryStore para ChromaDB
 
 ### Fase 2: RAGService
 
-- [ ] Criar `services/ragService.js`
-- [ ] Orquestra AnthropicService + RAGChain + ChromaStore
-- [ ] Testes básicos de funcionamento
-- [ ] Integração com nova interface do ChromaDB
+- [x] Criar `services/ragService.js`
+- [x] Orquestra AnthropicService + RAGChain + ChromaStore
+- [x] Testes básicos de funcionamento
+- [x] Integração com nova interface do ChromaDB
+- [x] ChromaRetriever customizado para compatibilidade LangChain
 
 ### Fase 3: ChromaStore Puro
 
-- [ ] Adicionar dependência ChromaDB
-- [ ] Criar `vectorStore/chromaStore.js` (ChromaDB puro)
-- [ ] Implementar modo memória e persistente
-- [ ] Remover dependências do LangChain vector stores
-- [ ] Testes de performance e funcionalidade
+- [x] Adicionar dependência ChromaDB
+- [x] Criar `vectorStore/chromaStore.js` (ChromaDB puro)
+- [x] Implementar modo memória e persistente
+- [x] Remover dependências do LangChain vector stores
+- [x] Testes de performance e funcionalidade
 
 ### Fase 4: Integração ChromaDB
 
