@@ -7,7 +7,7 @@ export class RAGService {
   constructor(existingChromaStore = null) {
     this.anthropicService = new AnthropicService()
     this.embeddingService = new EmbeddingService()
-    this.chromaStore = existingChromaStore // Allow injection of existing ChromaStore
+    this.chromaStore = existingChromaStore
     this.ragChain = null
     this.isInitialized = false
     this.isPersistent = false

@@ -32,8 +32,7 @@ src/
 ├── loaders/                 # MANTIDO: Implementação atual
 │   └── documentLoader.js
 ├── vectorStore/             # SUBSTITUÍDO: ChromaDB exclusivo
-│   ├── memoryStore.js       # REMOVIDO: Substituído por ChromaDB em memória
-│   └── chromaStore.js       # NOVO: ChromaDB puro (memória + persistente)
+│   └── chromaStore.js       # ÚNICO: ChromaDB puro (memória + persistente)
 ├── demos/
 │   └── demo.js             # SIMPLIFICADO: Usa apenas os 2 orquestradores
 └── main.js                 # MANTIDO: Entry point
@@ -183,10 +182,11 @@ async function demo() {
 ### Versão Individual (MANTIDA)
 
 ```javascript
-// Código atual continua funcionando 100%
+// Código atual continua funcionando 100% (apenas para referência histórica)
+// IMPORTANTE: MemoryStore foi removido, use apenas ChromaDB
 const documentLoader = new DocumentLoader()
 const embeddingService = new EmbeddingService()
-const memoryStore = new MemoryStore(embeddingService.embeddings)
+const chromaStore = new ChromaStore(embeddingService.embeddings) // Mudança: ChromaStore
 const anthropicService = new AnthropicService()
 const ragChain = new RAGChain(anthropicService.llm, retriever)
 // ... resto da implementação atual
@@ -214,7 +214,7 @@ HUGGINGFACE_API_KEY=xxx
 EMBEDDING_MODEL=xxx
 EMBEDDING_PROVIDER=hf-inference
 
-# Novos (obrigatórios para ChromaDB)
+# ChromaDB exclusivo (obrigatórios)
 USE_PERSISTENT_STORAGE=false
 CHROMA_PERSIST_PATH=./database/chromadb/persist
 CHROMA_COLLECTION_NAME=docs_collection
@@ -283,19 +283,15 @@ CHROMA_MEMORY_LIMIT=512
 
 ### Fase 4: Integração ChromaDB
 
-- [ ] Atualizar orquestradores para usar apenas ChromaStore
-- [ ] Configuração via environment variables
-- [ ] Testes de migração MemoryStore → ChromaDB
-- [ ] Implementar migração dinâmica entre modos
-- [ ] Remover memoryStore.js completamente
+- [x] Atualizar orquestradores para usar apenas ChromaStore
+- [x] Configuração via environment variables
+- [x] Testes de migração MemoryStore → ChromaDB
+- [x] Implementar migração dinâmica entre modos
+- [x] Remover memoryStore.js completamente
 
 ### Fase 5: Demo e Documentação
 
 - [ ] Atualizar `demos/demo.js` com ChromaDB exclusivo
-- [ ] Documentar vantagens do ChromaDB puro
-- [ ] Exemplos de uso para MCP integration
-- [ ] Testes end-to-end com ambos os modos
-- [ ] Guia de migração do LangChain vector stores
 
 ### Fase 6: Otimizações
 

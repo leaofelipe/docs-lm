@@ -1,7 +1,7 @@
 import { DocumentLoader } from '../loaders/documentLoader.js'
 import { EmbeddingService } from '../embeddings/embeddingService.js'
 import { ChromaStore } from '../vectorStore/chromaStore.js'
-import { MemoryStore } from '../vectorStore/memoryStore.js'
+
 import fs from 'fs'
 import path from 'path'
 
@@ -10,9 +10,8 @@ export class DocumentProcessor {
     this.documentLoader = new DocumentLoader()
     this.embeddingService = new EmbeddingService()
     this.chromaStore = null
-    this.memoryStore = null // Keep for backward compatibility
+    // MemoryStore removed: using only ChromaStore
     this.currentStore = null
-    this.useChromaDB = process.env.USE_CHROMADB !== 'false' // Default to ChromaDB
     this.persistent = process.env.USE_PERSISTENT_STORAGE === 'true'
     this.processedFiles = new Map() // Track processed files for incremental updates
   }
@@ -29,12 +28,8 @@ export class DocumentProcessor {
       // Initialize embedding service
       await this.embeddingService.initialize()
 
-      // Initialize vector store based on configuration
-      if (this.useChromaDB) {
-        await this.initializeChromaStore()
-      } else {
-        await this.initializeMemoryStore()
-      }
+      // Always initialize ChromaStore
+      await this.initializeChromaStore()
 
       console.log('DocumentProcessor initialized successfully')
       return this
@@ -56,19 +51,6 @@ export class DocumentProcessor {
       )
     } catch (error) {
       console.error('Error initializing ChromaStore:', error.message)
-      throw error
-    }
-  }
-
-  async initializeMemoryStore() {
-    try {
-      this.memoryStore = new MemoryStore(this.embeddingService.embeddings)
-      // Initialize with empty documents - will be populated by processAllDocuments
-      await this.memoryStore.initialize([])
-      this.currentStore = this.memoryStore
-      console.log('MemoryStore initialized')
-    } catch (error) {
-      console.error('Error initializing MemoryStore:', error.message)
       throw error
     }
   }
@@ -121,16 +103,12 @@ export class DocumentProcessor {
       }
 
       if (newDocuments.length > 0) {
-        // Add documents to vector store
-        if (this.useChromaDB && this.chromaStore) {
+        // Add documents to ChromaStore
+        if (this.chromaStore) {
           await this.chromaStore.addDocuments(newDocuments)
-        } else if (this.memoryStore) {
-          await this.memoryStore.addDocuments(newDocuments)
         }
         stats.added = newDocuments.length
-        console.log(
-          `Added ${newDocuments.length} new documents to vector store`
-        )
+        console.log(`Added ${newDocuments.length} new documents to ChromaStore`)
       }
 
       return stats
@@ -184,12 +162,9 @@ export class DocumentProcessor {
       // Clear processed files tracking
       this.processedFiles.clear()
 
-      // Clear vector store
-      if (this.useChromaDB && this.chromaStore) {
+      // Clear ChromaStore
+      if (this.chromaStore) {
         await this.chromaStore.clearCollection()
-      } else if (this.memoryStore) {
-        // Reinitialize memory store
-        await this.initializeMemoryStore()
       }
 
       // Reprocess all documents
@@ -207,19 +182,14 @@ export class DocumentProcessor {
     try {
       const status = {
         initialized: this.currentStore !== null,
-        vectorStore: this.useChromaDB ? 'ChromaDB' : 'MemoryStore',
+        vectorStore: 'ChromaDB',
         persistent: this.persistent,
         processedFiles: this.processedFiles.size,
         documentCount: 0
       }
 
-      if (this.currentStore) {
-        if (this.useChromaDB && this.chromaStore) {
-          status.documentCount = await this.chromaStore.getDocumentCount()
-        } else {
-          // For memory store, we don't have a direct count method
-          status.documentCount = 'unknown'
-        }
+      if (this.chromaStore) {
+        status.documentCount = await this.chromaStore.getDocumentCount()
       }
 
       return status
@@ -229,148 +199,12 @@ export class DocumentProcessor {
     }
   }
 
-  async switchToPersistent() {
-    try {
-      if (!this.useChromaDB) {
-        throw new Error('ChromaDB must be enabled to use persistent storage')
-      }
-
-      if (this.persistent) {
-        console.log('Already using persistent storage')
-        return
-      }
-
-      console.log('Switching to persistent storage...')
-      await this.chromaStore.switchToPersistent()
-      this.persistent = true
-      console.log('Switched to persistent storage successfully')
-    } catch (error) {
-      console.error('Error switching to persistent storage:', error.message)
-      throw error
-    }
-  }
-
-  async switchToMemory() {
-    try {
-      if (!this.useChromaDB) {
-        console.log('Already using memory storage (MemoryStore)')
-        return
-      }
-
-      if (!this.persistent) {
-        console.log('Already using memory storage')
-        return
-      }
-
-      console.log('Switching to memory storage...')
-      await this.chromaStore.switchToMemory()
-      this.persistent = false
-      console.log('Switched to memory storage successfully')
-    } catch (error) {
-      console.error('Error switching to memory storage:', error.message)
-      throw error
-    }
-  }
-
-  async switchToChromaDB(persistent = false) {
-    try {
-      if (this.useChromaDB) {
-        console.log('Already using ChromaDB')
-        return
-      }
-
-      console.log('Switching to ChromaDB...')
-
-      // Export data from memory store if available
-      let exportedData = null
-      if (this.memoryStore && this.memoryStore.vectorStore) {
-        try {
-          // Get all documents from memory store
-          const docs = await this.memoryStore.vectorStore.similaritySearch(
-            '',
-            1000
-          )
-          exportedData = docs
-          console.log(`Exported ${docs.length} documents from MemoryStore`)
-        } catch (error) {
-          console.warn('Could not export data from MemoryStore:', error.message)
-        }
-      }
-
-      // Initialize ChromaDB
-      this.useChromaDB = true
-      this.persistent = persistent
-      await this.initializeChromaStore()
-
-      // Import data if available
-      if (exportedData && exportedData.length > 0) {
-        await this.chromaStore.addDocuments(exportedData)
-        console.log(`Imported ${exportedData.length} documents to ChromaDB`)
-      }
-
-      console.log('Successfully switched to ChromaDB')
-    } catch (error) {
-      console.error('Error switching to ChromaDB:', error.message)
-      throw error
-    }
-  }
-
-  async switchToMemoryStore() {
-    try {
-      if (!this.useChromaDB) {
-        console.log('Already using MemoryStore')
-        return
-      }
-
-      console.log('Switching to MemoryStore...')
-
-      // Export data from ChromaDB if available
-      let exportedData = null
-      if (this.chromaStore) {
-        try {
-          const chromaData = await this.chromaStore.exportData()
-          if (chromaData.data && chromaData.data.documents) {
-            exportedData = chromaData.data.documents.map((doc, index) => ({
-              pageContent: doc,
-              metadata: chromaData.data.metadatas[index] || {}
-            }))
-          }
-          console.log(
-            `Exported ${exportedData?.length || 0} documents from ChromaDB`
-          )
-        } catch (error) {
-          console.warn('Could not export data from ChromaDB:', error.message)
-        }
-      }
-
-      // Initialize MemoryStore
-      this.useChromaDB = false
-      await this.initializeMemoryStore()
-
-      // Import data if available
-      if (exportedData && exportedData.length > 0) {
-        await this.memoryStore.addDocuments(exportedData)
-        console.log(`Imported ${exportedData.length} documents to MemoryStore`)
-      }
-
-      console.log('Successfully switched to MemoryStore')
-    } catch (error) {
-      console.error('Error switching to MemoryStore:', error.message)
-      throw error
-    }
-  }
-
-  // Getter for backward compatibility
-  get vectorStore() {
-    return this.currentStore
-  }
-
   // Get retriever for integration with chains
   getRetriever(options = {}) {
-    if (!this.currentStore) {
+    if (!this.chromaStore) {
       throw new Error('DocumentProcessor not initialized')
     }
-    return this.currentStore.getRetriever(options)
+    return this.chromaStore.getRetriever(options)
   }
 
   // Check if incremental updates are needed
@@ -398,20 +232,5 @@ export class DocumentProcessor {
       console.error('Error checking for updates:', error.message)
       throw error
     }
-  }
-
-  // Get ChromaStore instance for sharing with other services
-  getChromaStore() {
-    if (this.useChromaDB && this.chromaStore) {
-      return this.chromaStore
-    }
-    throw new Error(
-      'ChromaStore not available. Ensure useChromaDB is true and service is initialized.'
-    )
-  }
-
-  // Get current vector store (ChromaStore or MemoryStore)
-  getCurrentStore() {
-    return this.currentStore
   }
 }
