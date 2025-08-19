@@ -21,7 +21,7 @@ async function demo() {
     const rag = new RAGService()
     await rag.initialize(usePersistent, processor.getChromaStore())
 
-    const question = 'Faça uma lista de todos os eventos do Player'
+    const question = 'Liste todos os eventos do player'
     console.log(`Question: ${question}`)
     const response = await rag.ask(question)
     console.log(`Answer: ${response.answer}`)
