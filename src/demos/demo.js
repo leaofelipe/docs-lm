@@ -7,7 +7,7 @@ import { RAGChain } from '../chains/ragChain.js'
 
 dotenv.config()
 
-const questions = ['O que são eventos do player?']
+const questions = ['Liste todos os eventos do player.']
 
 async function demo() {
   try {
