@@ -1,57 +1,44 @@
 import dotenv from 'dotenv'
-import { DocumentLoader } from '../loaders/documentLoader.js'
-import { EmbeddingService } from '../embeddings/embeddingService.js'
-import { MemoryStore } from '../vectorStore/memoryStore.js'
-import { AnthropicService } from '../llm/anthropicService.js'
-import { RAGChain } from '../chains/ragChain.js'
+import { DocumentProcessor } from '../services/documentProcessor.js'
+import { RAGService } from '../services/ragService.js'
 
 dotenv.config()
 
-const questions = ['O que são eventos do player?']
-
 async function demo() {
   try {
-    const documentLoader = new DocumentLoader()
-    const documents = await documentLoader.loadAndSplitDocuments()
+    console.log('=== Demo: Orchestrators with ChromaDB only ===')
 
-    const embeddingService = new EmbeddingService()
-    await embeddingService.initialize()
+    const usePersistent = process.env.USE_PERSISTENT_STORAGE === 'true'
 
-    const memoryStore = new MemoryStore(embeddingService.embeddings)
-    await memoryStore.initialize(documents)
+    // 1) Process documents using DocumentProcessor (ChromaDB only)
+    const processor = new DocumentProcessor()
+    await processor.initialize(usePersistent)
+    await processor.processAllDocuments()
+    const procStatus = await processor.getProcessingStatus()
+    console.log('DocumentProcessor status:', procStatus)
 
-    const anthropicService = new AnthropicService()
-    await anthropicService.initialize()
+    // 2) Ask using RAGService backed by the same ChromaStore
+    const rag = new RAGService()
+    await rag.initialize(usePersistent, processor.getChromaStore())
 
-    const retriever = memoryStore.getRetriever()
-    const ragChain = new RAGChain(anthropicService.llm, retriever)
-    await ragChain.initialize()
+    const question = 'Faça uma lista de todos os eventos do Player'
+    console.log(`Question: ${question}`)
+    const response = await rag.ask(question)
+    console.log(`Answer: ${response.answer}`)
+    console.log(
+      `Sources: ${response?.sourceDocuments?.length || 0} documents found`
+    )
 
-    for (const question of questions) {
-      console.log(`Question: ${question}`)
-
-      try {
-        const response = await ragChain.ask(question)
-        console.log(`Answer: ${response.answer}`)
-        console.log(
-          `Sources: ${response?.sourceDocuments.length} documents found`
-        )
-
-        if (response?.sourceDocuments.length > 0) {
-          console.log('Source documents:')
-          response.sourceDocuments.forEach((doc, index) => {
-            console.log(`${index + 1}. Content: ${doc.pageContent}`)
-            console.log(`   Metadata: ${JSON.stringify(doc.metadata)}`)
-          })
-        }
-        console.log('---\n')
-      } catch (error) {
-        console.log(error)
-        console.error(`Error: ${error.message}\n`)
-      }
+    if (response?.sourceDocuments?.length) {
+      console.log('Source documents:')
+      response.sourceDocuments.forEach((doc, index) => {
+        console.log(`${index + 1}. ${doc.metadata?.source || 'unknown'}`)
+        console.log(`   Content: ${doc.pageContent || ''}`)
+      })
     }
+
+    console.log('=== Demo finished ===')
   } catch (error) {
-    console.log(error)
     console.error('Demo failed:', error.message)
   }
 }

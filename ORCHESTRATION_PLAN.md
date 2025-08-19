@@ -291,7 +291,7 @@ CHROMA_MEMORY_LIMIT=512
 
 ### Fase 5: Demo e Documentação
 
-- [ ] Atualizar `demos/demo.js` com ChromaDB exclusivo
+- [x] Atualizar `demos/demo.js` com ChromaDB exclusivo
 
 ### Fase 6: Otimizações
 

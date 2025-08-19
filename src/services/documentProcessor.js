@@ -207,6 +207,14 @@ export class DocumentProcessor {
     return this.chromaStore.getRetriever(options)
   }
 
+  // Expose ChromaStore instance for orchestrated flows
+  getChromaStore() {
+    if (!this.chromaStore) {
+      throw new Error('DocumentProcessor not initialized')
+    }
+    return this.chromaStore
+  }
+
   // Check if incremental updates are needed
   async checkForUpdates() {
     try {
