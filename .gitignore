@@ -4,3 +4,9 @@ node_modules/
 Data/**
 !Data/.gitkeep
 .yarn/
+
+# ChromaDB persistent storage
+database/chromadb/persist/
+database/chromadb/backups/
+*.db
+*.sqlite

@@ -11,7 +11,6 @@ Centralize documentation for seamless LLM integration.
 
 ### Next Steps
 
-- [ ] Replace the in-memory Vector Database with ChromaDB in embedded mode (serverless)
 - [ ] Add support for more LLM services (Gemini, OpenAI)
 - [ ] Separate services between file processing and storage, data retrieval
 - [ ] Add MCP support for external integration
@@ -34,7 +33,7 @@ docs-lm/
 │   ├── loaders/
 │   │   └── documentLoader.js     # Markdown document loading utilities
 │   └── vectorStore/
-│       └── memoryStore.js        # In-memory vector storage
+│       └── chromaStore.js        # ChromaDB vector storage (memory or persistent)
 ├── data/
 │   ├── docs/                     # Documentation files (markdown)
 │   └── testing/                  # Test data
